@@ -1,0 +1,238 @@
+{
+  "version": "test-2026-05-07",
+  "city": "Москва",
+  "clinics": [
+    {
+      "id": "CLN-001",
+      "name": "Клиника «Арбат-Мед»",
+      "address": "Москва, ул. Новый Арбат, 21",
+      "metro": ["Смоленская", "Арбатская"],
+      "hours": "08:00-22:00",
+      "payment": ["карта", "наличные"],
+      "equipment": {
+        "mri": {
+          "magnet_t": 1.5,
+          "weight_limit_kg": 120
+        }
+      },
+      "services": [
+        {
+          "code": "MRI_LS",
+          "name": "МРТ пояснично-крестцового отдела",
+          "price_rub": 6900,
+          "requires_referral": false,
+          "notes": "Без контраста."
+        },
+        {
+          "code": "EEG_STD",
+          "name": "ЭЭГ стандартная (60 мин)",
+          "price_rub": 2500,
+          "requires_referral": false,
+          "patient_age_min_years": 6,
+          "duration_minutes": 60,
+          "notes": "Детям с 6 лет."
+        },
+        {
+          "code": "NEURO",
+          "name": "Невролог (первичный прием)",
+          "price_rub": 3200,
+          "requires_referral": false
+        }
+      ],
+      "booking_rules": {
+        "cancel_policy": "Отмена без штрафа за 4 часа до визита.",
+        "prepay_required": false
+      }
+    },
+    {
+      "id": "CLN-002",
+      "name": "МЦ «Киевский»",
+      "address": "Москва, Большая Дорогомиловская, 5",
+      "metro": ["Киевская"],
+      "hours": "09:00-21:00",
+      "payment": ["карта"],
+      "equipment": {
+        "mri": {
+          "magnet_t": 3.0,
+          "weight_limit_kg": 200
+        }
+      },
+      "services": [
+        {
+          "code": "MRI_LS",
+          "name": "МРТ пояснично-крестцового отдела",
+          "price_rub": 7500,
+          "requires_referral": false,
+          "notes": "Есть вечерние слоты по будням."
+        },
+        {
+          "code": "DEXA_DXA",
+          "name": "Денситометрия рентгеновская (DXA): поясничный отдел + шейка бедра",
+          "price_rub": 4200,
+          "requires_referral": false,
+          "method": "рентгеновская (DXA)",
+          "body_areas": ["поясничный отдел", "шейка бедра"],
+          "notes": "Исследование 15–20 минут."
+        },
+        {
+          "code": "US_ABD",
+          "name": "УЗИ органов брюшной полости",
+          "price_rub": 2800,
+          "requires_referral": false
+        }
+      ],
+      "booking_rules": {
+        "cancel_policy": "Отмена без штрафа за 12 часов до визита.",
+        "prepay_required": false
+      }
+    },
+    {
+      "id": "CLN-003",
+      "name": "Диагностический центр «Тверская-24»",
+      "address": "Москва, Тверская, 24",
+      "metro": ["Тверская", "Пушкинская", "Чеховская"],
+      "hours": "00:00-23:59",
+      "payment": ["карта", "наличные"],
+      "equipment": {
+        "mri": {
+          "magnet_t": 1.5,
+          "weight_limit_kg": 150
+        }
+      },
+      "services": [
+        {
+          "code": "CT_CHEST",
+          "name": "КТ органов грудной клетки",
+          "price_rub": 8200,
+          "requires_referral": false
+        },
+        {
+          "code": "MRI_LS",
+          "name": "МРТ пояснично-крестцового отдела",
+          "price_rub": 6400,
+          "requires_referral": false,
+          "notes": "Круглосуточно."
+        },
+        {
+          "code": "EEG_SLEEP_DAY",
+          "name": "ЭЭГ дневного сна (≈2 часа)",
+          "price_rub": 6500,
+          "requires_referral": false,
+          "patient_age_min_years": 0,
+          "duration_minutes": 120,
+          "notes": "Детям любого возраста по записи."
+        }
+      ],
+      "booking_rules": {
+        "cancel_policy": "Отмена без штрафа за 2 часа до визита.",
+        "prepay_required": false
+      }
+    },
+    {
+      "id": "CLN-004",
+      "name": "Клиника «Сокол+»",
+      "address": "Москва, Ленинградский пр-т, 74",
+      "metro": ["Сокол"],
+      "hours": "08:00-20:00",
+      "payment": ["карта", "наличные"],
+      "services": [
+        {
+          "code": "CARDIO",
+          "name": "Кардиолог (первичный прием)",
+          "price_rub": 3500,
+          "requires_referral": false
+        },
+        {
+          "code": "ECG",
+          "name": "ЭКГ",
+          "price_rub": 900,
+          "requires_referral": false
+        },
+        {
+          "code": "DEXA_US",
+          "name": "Денситометрия УЗ-методом: пяточная кость",
+          "price_rub": 1900,
+          "requires_referral": false,
+          "method": "УЗ-метод",
+          "body_areas": ["пяточная кость"],
+          "notes": "Скрининг-оценка."
+        }
+      ],
+      "booking_rules": {
+        "cancel_policy": "Отмена без штрафа за 24 часа до визита.",
+        "prepay_required": false
+      }
+    },
+    {
+      "id": "CLN-005",
+      "name": "Клиника «Юго-Запад»",
+      "address": "Москва, пр-т Вернадского, 86",
+      "metro": ["Юго-Западная"],
+      "hours": "10:00-22:00",
+      "payment": ["карта"],
+      "services": [
+        {
+          "code": "DERM",
+          "name": "Дерматолог (первичный прием)",
+          "price_rub": 2900,
+          "requires_referral": false
+        },
+        {
+          "code": "US_ABD",
+          "name": "УЗИ органов брюшной полости",
+          "price_rub": 2400,
+          "requires_referral": false
+        },
+        {
+          "code": "DEXA_DXA_FOREARM",
+          "name": "Денситометрия рентгеновская (DXA): предплечье",
+          "price_rub": 2600,
+          "requires_referral": false,
+          "method": "рентгеновская (DXA)",
+          "body_areas": ["предплечье"]
+        }
+      ],
+      "booking_rules": {
+        "cancel_policy": "Отмена без штрафа за 8 часов до визита.",
+        "prepay_required": false
+      }
+    },
+    {
+      "id": "CLN-006",
+      "name": "МРТ-центр «Сити-Скан»",
+      "address": "Москва, Пресненская наб., 12",
+      "metro": ["Деловой центр", "Выставочная"],
+      "hours": "08:00-23:00",
+      "payment": ["карта", "наличные"],
+      "equipment": {
+        "mri": {
+          "magnet_t": 3.0,
+          "weight_limit_kg": 130
+        }
+      },
+      "services": [
+        {
+          "code": "MRI_LS",
+          "name": "МРТ пояснично-крестцового отдела",
+          "price_rub": 7200,
+          "requires_referral": false,
+          "notes": "Возможен контраст по назначению врача (не в этом прайсе)."
+        },
+        {
+          "code": "EEG_NIGHT",
+          "name": "ЭЭГ ночная (≈8–10 часов)",
+          "price_rub": 14500,
+          "requires_referral": false,
+          "patient_age_min_years": 12,
+          "duration_minutes": 540,
+          "notes": "Детям с 12 лет."
+        }
+      ],
+      "booking_rules": {
+        "cancel_policy": "Отмена без штрафа за 6 часов до визита.",
+        "prepay_required": true
+      }
+    }
+  ]
+}
+
