@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 
 from telegram import Update
 from telegram.constants import ChatAction
@@ -11,11 +12,13 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
+from telegram.request import HTTPXRequest
 
 from bot.config import load_config
 from bot.context import load_context
 from bot.llm import ask_llm
 from bot.memory import ChatMemory
+from bot.structured_answers import extract_eeg_facts
 from bot.system_prompt import SYSTEM_PROMPT
 
 
@@ -24,6 +27,21 @@ logging.basicConfig(
     level=logging.INFO,
 )
 logger = logging.getLogger("sberegi-bot")
+
+def _ensure_ca_bundle() -> None:
+    """
+    Force a known CA bundle (certifi) for TLS verification.
+    Helps on Windows/corporate networks where Python can't find system roots.
+    """
+    if os.environ.get("SSL_CERT_FILE") or os.environ.get("REQUESTS_CA_BUNDLE"):
+        return
+    try:
+        import certifi
+
+        os.environ["SSL_CERT_FILE"] = certifi.where()
+    except Exception:
+        # If certifi isn't available, keep default behavior.
+        return
 
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -68,6 +86,17 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.effective_chat.id  # type: ignore[union-attr]
     user_text = update.message.text.strip()
 
+    # Context supplement: for EEG questions, inject extracted catalog facts so the LLM can't miss them.
+    augmented_context = context_blob
+    if "ЭЭГ" in user_text.upper():
+        eeg_facts = extract_eeg_facts(cfg.context_dir)
+        if eeg_facts:
+            augmented_context = (
+                augmented_context
+                + "\n\n========================\nВЫЖИМКА ДЛЯ ТЕКУЩЕГО ВОПРОСА (использовать как источник истины)\n========================\n"
+                + eeg_facts
+            )
+
     memory.add(chat_id, "user", user_text)
     history = memory.get(chat_id)[:-1]  # exclude just-added user msg; it will be appended in ask_llm
 
@@ -79,7 +108,7 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             base_url=cfg.openai_base_url,
             model=cfg.openai_model,
             system_prompt=SYSTEM_PROMPT,
-            context_blob=context_blob,
+            context_blob=augmented_context,
             history=history,
             user_text=user_text,
         )
@@ -92,10 +121,22 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 def main() -> None:
+    _ensure_ca_bundle()
     cfg = load_config()
     context_blob = load_context(cfg.context_dir, cfg.context_char_limit)
 
-    app = Application.builder().token(cfg.telegram_bot_token).build()
+    # Important: getUpdates (long polling) can occupy one connection for a long time.
+    # If the connection pool is too small, sendMessage may time out (bot "types" and stops).
+    if cfg.telegram_insecure_skip_verify:
+        send_request = HTTPXRequest(connection_pool_size=8, pool_timeout=10.0, httpx_kwargs={"verify": False})
+        updates_request = HTTPXRequest(connection_pool_size=1, pool_timeout=10.0, httpx_kwargs={"verify": False})
+    else:
+        send_request = HTTPXRequest(connection_pool_size=8, pool_timeout=10.0)
+        updates_request = HTTPXRequest(connection_pool_size=1, pool_timeout=10.0)
+
+    app_builder = Application.builder().token(cfg.telegram_bot_token)
+    app_builder = app_builder.request(send_request).get_updates_request(updates_request)
+    app = app_builder.build()
     app.bot_data["config"] = cfg
     app.bot_data["memory"] = ChatMemory(limit=cfg.history_limit)
     app.bot_data["context_blob"] = context_blob

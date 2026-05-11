@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+
+import httpx
 from openai import AsyncOpenAI
 
 from bot.memory import ChatMessage
@@ -36,7 +39,19 @@ async def ask_llm(
 ) -> str:
     # Force a valid base URL even if a system-level env var is malformed.
     resolved_base_url = base_url or DEFAULT_OPENAI_BASE_URL
-    client = AsyncOpenAI(api_key=api_key, base_url=resolved_base_url)
+    insecure_skip_verify = os.getenv("OPENAI_INSECURE_SKIP_VERIFY", "0").strip() in {
+        "1",
+        "true",
+        "True",
+        "yes",
+        "YES",
+    }
+
+    http_client = None
+    if insecure_skip_verify:
+        http_client = httpx.AsyncClient(verify=False)
+
+    client = AsyncOpenAI(api_key=api_key, base_url=resolved_base_url, http_client=http_client)
 
     messages = build_messages(system_prompt, context_blob, history, user_text)
 

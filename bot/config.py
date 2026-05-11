@@ -15,6 +15,7 @@ class Config:
     context_dir: str
     history_limit: int
     context_char_limit: int
+    telegram_insecure_skip_verify: bool
 
 
 def load_config() -> Config:
@@ -27,6 +28,13 @@ def load_config() -> Config:
     context_dir = os.getenv("CONTEXT_DIR", "context").strip()
     history_limit = int(os.getenv("HISTORY_LIMIT", "10").strip())
     context_char_limit = int(os.getenv("CONTEXT_CHAR_LIMIT", "35000").strip())
+    telegram_insecure_skip_verify = os.getenv("TELEGRAM_INSECURE_SKIP_VERIFY", "0").strip() in {
+        "1",
+        "true",
+        "True",
+        "yes",
+        "YES",
+    }
 
     if not telegram_bot_token:
         raise RuntimeError("TELEGRAM_BOT_TOKEN is required")
@@ -41,5 +49,6 @@ def load_config() -> Config:
         context_dir=context_dir,
         history_limit=history_limit,
         context_char_limit=context_char_limit,
+        telegram_insecure_skip_verify=telegram_insecure_skip_verify,
     )
 
