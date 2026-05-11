@@ -18,6 +18,7 @@ from bot.config import load_config
 from bot.context import load_context
 from bot.llm import ask_llm
 from bot.memory import ChatMemory
+from bot.rag import init_rag_optional, retrieve_rag_context
 from bot.structured_answers import extract_eeg_facts
 from bot.system_prompt import SYSTEM_PROMPT
 
@@ -86,6 +87,12 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.effective_chat.id  # type: ignore[union-attr]
     user_text = update.message.text.strip()
 
+    rag_retriever = context.application.bot_data.get("rag")
+
+    rag_blob = ""
+    if rag_retriever is not None:
+        rag_blob = await retrieve_rag_context(rag_retriever, user_text, logger)
+
     # Context supplement: for EEG questions, inject extracted catalog facts so the LLM can't miss them.
     augmented_context = context_blob
     if "ЭЭГ" in user_text.upper():
@@ -96,6 +103,15 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 + "\n\n========================\nВЫЖИМКА ДЛЯ ТЕКУЩЕГО ВОПРОСА (использовать как источник истины)\n========================\n"
                 + eeg_facts
             )
+
+    if rag_blob:
+        augmented_context = (
+            "========================\nРЕЛЕВАНТНЫЕ ФРАГМЕНТЫ (векторный поиск Supabase)\n"
+            "========================\n"
+            + rag_blob
+            + "\n\n========================\nКОНТЕКСТ ИЗ ФАЙЛОВ ПРОЕКТА\n========================\n"
+            + augmented_context
+        )
 
     memory.add(chat_id, "user", user_text)
     history = memory.get(chat_id)[:-1]  # exclude just-added user msg; it will be appended in ask_llm
@@ -140,6 +156,7 @@ def main() -> None:
     app.bot_data["config"] = cfg
     app.bot_data["memory"] = ChatMemory(limit=cfg.history_limit)
     app.bot_data["context_blob"] = context_blob
+    app.bot_data["rag"] = init_rag_optional(logger, cfg.openai_api_key)
 
     app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(CommandHandler("reset", cmd_reset))
